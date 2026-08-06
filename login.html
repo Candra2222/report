@@ -42,7 +42,9 @@
   async function tryLogin() {
     const btn = document.getElementById("login-btn");
     const errEl = document.getElementById("error");
-    const password = document.getElementById("password-input").value;
+    
+    // PERBAIKAN: Tambahkan .value untuk mengambil teks inputan
+    const password = document.getElementById("password-input").value; 
 
     btn.disabled = true;
     errEl.textContent = "";
@@ -53,23 +55,21 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
       });
+      
       const data = await res.json();
 
-      if (data.ok) {
-        window.location.href = "/"; // middleware sekarang akan meloloskan request ini
+      if (res.ok) { 
+        window.location.href = "/"; // Redirect ke dashboard utama jika sukses
       } else {
         errEl.textContent = data.error || "Password salah";
       }
     } catch (e) {
-      errEl.textContent = "Gagal terhubung ke server";
+      console.error(e);
+      errEl.textContent = "Gagal terhubung ke server.";
     } finally {
       btn.disabled = false;
     }
   }
-
-  document.getElementById("password-input").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") tryLogin();
-  });
 </script>
 </body>
 </html>
