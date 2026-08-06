@@ -46,20 +46,6 @@
   }
   .menu-btn:hover, .menu-btn.active { background: rgba(45,212,167,.1); color: var(--green); font-weight: 600; }
 
-  .sidebar-section-title { font-size: 10px; text-transform: uppercase; color: var(--muted); margin-top: 8px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
-  
-  .live-traffic-box { display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; }
-  .traffic-item {
-    background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 6px 8px;
-    border-radius: 6px; font-size: 11px; display: flex; justify-content: space-between; align-items: center;
-  }
-  .traffic-item .name { font-weight: 600; color: var(--text); }
-  .traffic-item .ip { color: var(--muted); font-size: 10px; }
-
-  .perf-box { display: flex; flex-direction: column; gap: 4px; }
-  .perf-row { display: flex; justify-content: space-between; font-size: 11px; padding: 4px 6px; background: rgba(255,255,255,0.01); border-radius: 4px; }
-  .perf-row span:last-child { color: var(--green); font-weight: 600; }
-
   /* KONTEN UTAMA KANAN */
   .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
@@ -137,15 +123,6 @@
       <button class="menu-btn" data-page="yesterday">🕒 Yesterday</button>
       <button class="menu-btn" data-page="reports">📊 Reports</button>
     </div>
-
-    <div class="sidebar-section-title">
-      <span>Live Traffic</span>
-      <span id="live-count" style="background:var(--border); padding:1px 5px; border-radius:4px; font-size:9px;">0</span>
-    </div>
-    <div class="live-traffic-box" id="live-traffic-list"></div>
-
-    <div class="sidebar-section-title"><span>Top Performance</span></div>
-    <div class="perf-box" id="daily-perf-list"></div>
   </aside>
 
   <!-- KONTEN UTAMA -->
@@ -334,8 +311,6 @@
 
       document.getElementById("total-payout").textContent = fmtMoney(totalSum);
     }
-
-    updateSidebarWidgets(data);
   }
 
   function applyFilters() {
@@ -372,42 +347,6 @@
     });
 
     renderView(filtered);
-  }
-
-  function updateSidebarWidgets(currentData) {
-    const trafficList = document.getElementById("live-traffic-list");
-    trafficList.innerHTML = "";
-    currentData.slice(0, 8).forEach(row => {
-      const item = document.createElement("div");
-      item.className = "traffic-item";
-      item.innerHTML = `
-        <div>
-          <div class="name">${countryToFlag(row.country)}</div>
-          <div class="ip">${row.ip || "Unknown IP"}</div>
-        </div>
-        <span class="payout">${fmtMoney(row.payout)}</span>
-      `;
-      trafficList.appendChild(item);
-    });
-    document.getElementById("live-count").textContent = currentData.length;
-
-    const perfMap = {};
-    currentData.forEach(r => {
-      const key = r.click_id ? `ID: ${r.click_id}` : (r.network.toUpperCase());
-      if (!perfMap[key]) perfMap[key] = { count: 0, sum: 0 };
-      perfMap[key].count += 1;
-      perfMap[key].sum += Number(r.payout || 0);
-    });
-
-    const perfContainer = document.getElementById("daily-perf-list");
-    perfContainer.innerHTML = "";
-    Object.keys(perfMap).sort((a, b) => perfMap[b].sum - perfMap[a].sum).slice(0, 10).forEach(key => {
-      const p = perfMap[key];
-      const div = document.createElement("div");
-      div.className = "perf-row";
-      div.innerHTML = `<span>${key} (x${p.count})</span><span>${fmtMoney(p.sum)}</span>`;
-      perfContainer.appendChild(div);
-    });
   }
 
   function showToast(row) {
