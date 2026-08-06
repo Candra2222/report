@@ -176,7 +176,7 @@
           <option value="imonetizeit">iMonetizeIt</option>
         </select>
 
-        <!-- Pengaturan Tanggal (Khusus / Utama) -->
+        <!-- Pengaturan Rentang Tanggal -->
         <input type="date" id="date-start" class="date-input" onchange="applyFilters()" />
         <span style="font-size:11px; color:var(--muted);">s/d</span>
         <input type="date" id="date-end" class="date-input" onchange="applyFilters()" />
@@ -185,9 +185,7 @@
 
     <div class="table-container">
       <table>
-        <thead id="table-head">
-          <!-- Header tabel berubah dinamis tergantung halaman -->
-        </thead>
+        <thead id="table-head"></thead>
         <tbody id="conversion-rows"></tbody>
       </table>
     </div>
@@ -202,9 +200,9 @@
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let allConversions = [];
-  let currentPage = "today"; // "today", "yesterday", "reports"
+  let currentPage = "today";
 
-  // Set default tanggal hari ini pada input date
+  // Set default tanggal hari ini
   const todayIso = new Date().toISOString().split('T')[0];
   document.getElementById("date-start").value = todayIso;
   document.getElementById("date-end").value = todayIso;
@@ -220,14 +218,23 @@
 
   function fmtMoney(n) { return "$" + Number(n).toFixed(2); }
 
-  // Render Tabel Berdasarkan Halaman yang Aktif
+  // Fungsi untuk mengubah kode negara (misal: "ID", "US") menjadi emoji bendera
+  function countryToFlag(countryCode) {
+    if (!countryCode || countryCode.length !== 2) return "🌐 " + (countryCode || "-");
+    const codePoints = countryCode
+      .toUpperCase()
+      .split('')
+      .map(char => 127397 + char.charCodeAt(0));
+    return String.fromCodePoint(...codePoints) + " " + countryCode.toUpperCase();
+  }
+
   function renderView(data) {
     const thead = document.getElementById("table-head");
     const tbody = document.getElementById("conversion-rows");
     tbody.innerHTML = "";
 
     if (currentPage === "reports") {
-      // TAMPILAN REPORTS: Mengelompokkan Total Hasil per ID (Click ID / Smartlink)
+      // TAMPILAN REPORTS: Total hasil per ID (Click ID / Smartlink)
       thead.innerHTML = `
         <tr>
           <th>#</th>
@@ -238,7 +245,6 @@
         </tr>
       `;
 
-      // Kelompokkan data berdasarkan Click ID
       const grouped = {};
       data.forEach(row => {
         const id = row.click_id || "UNKNOWN";
@@ -267,7 +273,6 @@
         tbody.appendChild(tr);
       });
 
-      // Baris Total di Bawah Tabel Reports
       if (groupedArray.length > 0) {
         const trTotal = document.createElement("tr");
         trTotal.className = "table-footer-total";
@@ -284,7 +289,7 @@
       document.getElementById("total-payout").textContent = fmtMoney(totalSum);
 
     } else {
-      // TAMPILAN TODAY / YESTERDAY (Tabel transaksi biasa secara real-time)
+      // TAMPILAN TODAY / YESTERDAY (Menggunakan Bendera Emoji untuk Country)
       thead.innerHTML = `
         <tr>
           <th>#</th>
@@ -305,7 +310,7 @@
           <td>${index + 1}</td>
           <td><span class="badge-network badge-${row.network}">${row.network.toUpperCase()}</span></td>
           <td>${row.click_id ?? "-"}</td>
-          <td>${row.country ?? "-"}</td>
+          <td>${countryToFlag(row.country)}</td>
           <td class="payout">${fmtMoney(row.payout)}</td>
           <td>${row.ip ?? "-"}</td>
           <td>${new Date(row.created_at).toLocaleTimeString()}</td>
@@ -319,7 +324,6 @@
     updateSidebarWidgets(data);
   }
 
-  // Filter Data Berdasarkan Tanggal, Network, dan Keyword Pencarian
   function applyFilters() {
     const keyword = document.getElementById("search-input").value.toLowerCase();
     const selectedNetwork = document.getElementById("network-filter").value;
@@ -330,7 +334,6 @@
       const rowDateObj = new Date(row.created_at);
       const rowDateStr = rowDateObj.toISOString().split('T')[0];
 
-      // 1. Filter Halaman (Sidebar Mode)
       const nowStr = new Date().toISOString().split('T')[0];
       const yestObj = new Date();
       yestObj.setDate(yestObj.getDate() - 1);
@@ -339,14 +342,11 @@
       if (currentPage === "today" && rowDateStr !== nowStr) return false;
       if (currentPage === "yesterday" && rowDateStr !== yestStr) return false;
 
-      // 2. Filter Tanggal Kustom (khususnya untuk halaman Reports atau filter tambahan)
       if (dateStartVal && rowDateStr < dateStartVal) return false;
       if (dateEndVal && rowDateStr > dateEndVal) return false;
 
-      // 3. Filter Network (All, Trafee, iMonetizeIt)
       if (selectedNetwork !== "all" && row.network !== selectedNetwork) return false;
 
-      // 4. Filter Keyword Search
       if (keyword) {
         const matchId = row.click_id && row.click_id.toLowerCase().includes(keyword);
         const matchCountry = row.country && row.country.toLowerCase().includes(keyword);
@@ -361,7 +361,6 @@
   }
 
   function updateSidebarWidgets(currentData) {
-    // Update Widget Live Traffic
     const trafficList = document.getElementById("live-traffic-list");
     trafficList.innerHTML = "";
     currentData.slice(0, 8).forEach(row => {
@@ -369,7 +368,7 @@
       item.className = "traffic-item";
       item.innerHTML = `
         <div>
-          <div class="name">${row.country || "GLOBAL"}</div>
+          <div class="name">${countryToFlag(row.country)}</div>
           <div class="ip">${row.ip || "Unknown IP"}</div>
         </div>
         <span class="payout">${fmtMoney(row.payout)}</span>
@@ -378,7 +377,6 @@
     });
     document.getElementById("live-count").textContent = currentData.length;
 
-    // Update Top Performance Berdasarkan ID
     const perfMap = {};
     currentData.forEach(r => {
       const key = r.click_id ? `ID: ${r.click_id}` : (r.network.toUpperCase());
@@ -407,16 +405,13 @@
     setTimeout(() => div.remove(), 4000);
   }
 
-  // Inisialisasi Navigasi Sidebar
   document.querySelectorAll("#sidebar-nav button").forEach(btn => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", () => {
       document.querySelectorAll("#sidebar-nav button").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       
       currentPage = btn.dataset.page;
       document.getElementById("page-title").textContent = currentPage.toUpperCase() + " CONVERSION";
-
-      // Jika pindah ke Reports, default tanggal bisa dilepas atau dibiarkan
       applyFilters();
     });
   });
