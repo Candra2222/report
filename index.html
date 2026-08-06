@@ -191,7 +191,7 @@
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let allConversions = [];
-  let totalPayout = 0;
+  let currentFilterMode = "today"; // "today", "yesterday", "reports"
 
   // Jam Realtime di Header
   setInterval(() => {
@@ -225,8 +225,40 @@
     });
   }
 
+  // Fungsi untuk memfilter data berdasarkan tombol sidebar yang dipilih
+  function getFilteredData() {
+    const now = new Date();
+    const todayStr = now.toDateString();
+    
+    const yesterday = new Date();
+    yesterday.setDate(now.getDate() - 1);
+    const yesterdayStr = yesterday.toDateString();
+
+    return allConversions.filter(row => {
+      const rowDate = new Date(row.created_at).toDateString();
+      if (currentFilterMode === "today") {
+        return rowDate === todayStr;
+      } else if (currentFilterMode === "yesterday") {
+        return rowDate === yesterdayStr;
+      } else {
+        // "reports" menampilkan semua data atau bisa disesuaikan
+        return true;
+      }
+    });
+  }
+
+  function updateDashboardView() {
+    const filteredData = getFilteredData();
+    
+    // Hitung total payout berdasarkan data yang sedang aktif difilter
+    const total = filteredData.reduce((acc, curr) => acc + Number(curr.payout || 0), 0);
+    document.getElementById("total-payout").textContent = fmtMoney(total);
+    
+    renderTable(filteredData);
+    updateDailyPerformance(filteredData);
+  }
+
   function updateSidebarWidgets(row) {
-    // Update Live Traffic Sidebar
     const trafficList = document.getElementById("live-traffic-list");
     const item = document.createElement("div");
     item.className = "traffic-item";
@@ -240,15 +272,13 @@
     trafficList.prepend(item);
     if (trafficList.children.length > 10) trafficList.lastChild.remove();
     document.getElementById("live-count").textContent = trafficList.children.length;
-
-    // Update Daily Performance Ringkasan Sederhana
-    updateDailyPerformance();
   }
 
-  function updateDailyPerformance() {
+  function updateDailyPerformance(dataToProcess) {
     const perfMap = {};
-    allConversions.forEach(r => {
-      const key = r.offer_name || r.network.toUpperCase();
+    dataToProcess.forEach(r => {
+      // Mengelompokkan berdasarkan Click ID atau Network/Offer
+      const key = r.click_id ? `ID: ${r.click_id}` : (r.network.toUpperCase());
       if (!perfMap[key]) perfMap[key] = { count: 0, sum: 0 };
       perfMap[key].count += 1;
       perfMap[key].sum += Number(r.payout || 0);
@@ -257,11 +287,13 @@
     const perfContainer = document.getElementById("daily-perf-list");
     perfContainer.innerHTML = "";
     
-    Object.keys(perfMap).slice(0, 10).forEach(key => {
+    const sortedKeys = Object.keys(perfMap).sort((a, b) => perfMap[b].sum - perfMap[a].sum);
+
+    sortedKeys.slice(0, 15).forEach(key => {
       const p = perfMap[key];
       const div = document.createElement("div");
       div.className = "perf-row";
-      div.innerHTML = `<span>${key} x${p.count}</span><span>${fmtMoney(p.sum)}</span>`;
+      div.innerHTML = `<span>${key} (x${p.count})</span><span>${fmtMoney(p.sum)}</span>`;
       perfContainer.appendChild(div);
     });
   }
@@ -277,7 +309,8 @@
 
   function filterTable() {
     const keyword = document.getElementById("search-input").value.toLowerCase();
-    const filtered = allConversions.filter(r => 
+    const filteredBase = getFilteredData();
+    const filtered = filteredBase.filter(r => 
       (r.click_id && r.click_id.toLowerCase().includes(keyword)) ||
       (r.country && r.country.toLowerCase().includes(keyword)) ||
       (r.ip && r.ip.toLowerCase().includes(keyword))
@@ -285,22 +318,35 @@
     renderTable(filtered);
   }
 
+  // Inisialisasi Tombol Sidebar (Today, Yesterday, Reports)
+  function initSidebarTabs() {
+    const buttons = document.querySelectorAll("aside .menu-list button");
+    buttons.forEach((btn, index) => {
+      btn.addEventListener("click", () => {
+        buttons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        if (index === 0) currentFilterMode = "today";
+        else if (index === 1) currentFilterMode = "yesterday";
+        else if (index === 2) currentFilterMode = "reports";
+
+        updateDashboardView();
+      });
+    });
+  }
+
   async function loadInitial() {
     let query = supabaseClient
       .from("conversions")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(500); // Ambil data lebih banyak untuk rentang yesterday/reports
 
     const { data, error } = await query;
     if (error) { console.error(error); return; }
 
     allConversions = data || [];
-    totalPayout = allConversions.reduce((acc, curr) => acc + Number(curr.payout || 0), 0);
-    
-    document.getElementById("total-payout").textContent = fmtMoney(totalPayout);
-    renderTable(allConversions);
-    updateDailyPerformance();
+    updateDashboardView();
   }
 
   function subscribeRealtime() {
@@ -312,10 +358,8 @@
         (payload) => {
           const row = payload.new;
           allConversions.unshift(row);
-          totalPayout += Number(row.payout || 0);
           
-          document.getElementById("total-payout").textContent = fmtMoney(totalPayout);
-          renderTable(allConversions);
+          updateDashboardView();
           updateSidebarWidgets(row);
           showToast(row);
         }
@@ -323,6 +367,7 @@
       .subscribe();
   }
 
+  initSidebarTabs();
   loadInitial();
   subscribeRealtime();
 </script>
