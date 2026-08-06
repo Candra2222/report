@@ -1,24 +1,34 @@
 import { verifySessionToken } from "./_utils/session.js";
 
-// Path yang TIDAK perlu login (halaman login itu sendiri + endpoint auth)
-const PUBLIC_PATHS = ["/login.html", "/api/login", "/api/logout"];
+// PENTING: Tambahkan "/login" (tanpa .html) untuk mencegah bentrok dengan Clean URLs Cloudflare
+const PUBLIC_PATHS = ["/login", "/login.html", "/api/login", "/api/logout"];
 
 export async function onRequest({ request, env, next }) {
   const url = new URL(request.url);
 
-  const isPublic = PUBLIC_PATHS.some((p) => url.pathname === p) ||
-    url.pathname.startsWith("/assets/"); // css/js/gambar publik boleh lewat, kalau ada
+  // Cek apakah path saat ini ada di daftar PUBLIC_PATHS atau di dalam folder assets
+  const isPublic = PUBLIC_PATHS.includes(url.pathname) || 
+                   url.pathname.startsWith("/assets/");
 
-  if (isPublic) return next();
+  if (isPublic) {
+    return next(); // Langsung lolos jika path publik
+  }
 
   const cookieHeader = request.headers.get("Cookie") || "";
   const match = cookieHeader.match(/session=([^;]+)/);
   const token = match ? match[1] : null;
 
-  const valid = await verifySessionToken(env.SESSION_SECRET, token);
+  try {
+    const valid = await verifySessionToken(env.SESSION_SECRET, token);
 
-  if (!valid) {
-    return Response.redirect(new URL("/login.html", request.url), 302);
+    if (!valid) {
+      // Arahkan ke versi "/login" yang bersih dari ekstensi html
+      return Response.redirect(new URL("/login", request.url), 302);
+    }
+  } catch (error) {
+    // Tangkap error jika fungsi verifikasi gagal (misal env secret belum diisi)
+    console.error("Session verification error:", error);
+    return Response.redirect(new URL("/login", request.url), 302);
   }
 
   return next();
