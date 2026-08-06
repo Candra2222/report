@@ -20,110 +20,184 @@
     font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
     background: var(--bg);
     color: var(--text);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
   }
 
-  header {
+  /* SIDEBAR KIRI */
+  aside {
+    width: 240px;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
+    flex-direction: column;
+    padding: 16px;
+    gap: 16px;
+    overflow-y: auto;
   }
-  header .brand { color: var(--green); font-weight: 700; letter-spacing: .5px; font-size: 13px; }
-  header .logout-btn {
+  .brand-area h2 { font-size: 13px; margin: 0; color: var(--text); letter-spacing: .5px; }
+  .brand-area span { font-size: 11px; color: var(--muted); }
+
+  .menu-list { display: flex; flex-direction: column; gap: 4px; }
+  .menu-btn {
+    background: transparent; border: none; color: var(--muted); padding: 8px 12px;
+    border-radius: 6px; font-size: 12px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 8px;
+  }
+  .menu-btn:hover, .menu-btn.active { background: rgba(45,212,167,.1); color: var(--green); font-weight: 600; }
+
+  .sidebar-section-title { font-size: 10px; text-transform: uppercase; color: var(--muted); margin-top: 8px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+  
+  /* LIVE TRAFFIC WIDGET DI SIDEBAR */
+  .live-traffic-box { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+  .traffic-item {
+    background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 6px 8px;
+    border-radius: 6px; font-size: 11px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .traffic-item .name { font-weight: 600; color: var(--text); }
+  .traffic-item .ip { color: var(--muted); font-size: 10px; }
+
+  /* DAILY PERFORMANCE WIDGET */
+  .perf-box { display: flex; flex-direction: column; gap: 4px; }
+  .perf-row { display: flex; justify-content: space-between; font-size: 11px; padding: 4px 6px; background: rgba(255,255,255,0.01); border-radius: 4px; }
+  .perf-row span:last-child { color: var(--green); font-weight: 600; }
+
+  /* KONTEN UTAMA KANAN */
+  .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--panel);
+  }
+  header .title-area { display: flex; align-items: center; gap: 12px; }
+  header h1 { font-size: 14px; margin: 0; }
+  
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .clock { font-size: 12px; color: var(--muted); }
+  .total-badge { font-size: 13px; color: var(--muted); }
+  .total-badge b { color: var(--green); }
+  .live-pill { background: rgba(45,212,167,.15); color: var(--green); font-size: 10px; padding: 2px 8px; border-radius: 999px; }
+  
+  .logout-btn {
     background: transparent; border: 1px solid var(--border); color: var(--muted);
     padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;
   }
-  header .logout-btn:hover { border-color: var(--muted); color: var(--text); }
+  .logout-btn:hover { border-color: var(--green); color: var(--green); }
 
-  .toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px 8px;
+  /* TOOLBAR PENCARIAN */
+  .toolbar { padding: 12px 20px; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid var(--border); }
+  .search-input {
+    flex: 1; background: var(--panel); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 12px; border-radius: 6px; font-size: 12px; outline: none;
   }
-  .toolbar h2 { margin: 0; font-size: 16px; }
-  .live-badge {
-    background: rgba(45,212,167,.15); color: var(--green);
-    font-size: 11px; padding: 2px 8px; border-radius: 999px; margin-left: 8px;
-  }
-  .total { font-size: 13px; color: var(--muted); }
-  .total b { color: var(--text); }
+  .search-input:focus { border-color: var(--green); }
 
-  .tabs { display: flex; gap: 8px; padding: 0 16px 12px; }
-  .tabs button {
-    background: var(--panel); border: 1px solid var(--border); color: var(--muted);
-    padding: 6px 14px; border-radius: 999px; font-size: 12px; cursor: pointer;
-  }
-  .tabs button.active { background: var(--green); color: #04140f; border-color: var(--green); font-weight: 700; }
-
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  /* TABEL DATA */
+  .table-container { flex: 1; overflow-y: auto; padding: 0 20px 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }
   thead th {
-    text-align: left; color: var(--muted); font-weight: 500; font-size: 11px;
-    text-transform: uppercase; padding: 8px 16px; border-bottom: 1px solid var(--border);
+    text-align: left; color: var(--muted); font-weight: 500; font-size: 10px;
+    text-transform: uppercase; padding: 10px 12px; border-bottom: 1px solid var(--border);
+    background: var(--bg); position: sticky; top: 0;
   }
-  tbody td { padding: 8px 16px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
   tbody tr.new-row { animation: flash 1.2s ease; }
   @keyframes flash { from { background: rgba(45,212,167,.25); } to { background: transparent; } }
-  .badge-network {
-    font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 700;
-  }
+
+  .badge-network { font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
   .badge-trafee { background: #3730a3; color: #c7d2fe; }
   .badge-imonetizeit { background: #7c2d12; color: #fed7aa; }
   .payout { color: var(--green); font-weight: 600; }
 
-  #toast-container {
-    position: fixed; bottom: 16px; right: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 50;
-  }
+  #toast-container { position: fixed; bottom: 16px; right: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 50; }
   .toast {
     background: var(--panel); border: 1px solid var(--green); border-radius: 8px;
-    padding: 8px 12px; font-size: 12px; min-width: 200px; animation: slidein .3s ease;
+    padding: 8px 12px; font-size: 11px; min-width: 200px; animation: slidein .3s ease;
   }
   @keyframes slidein { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 </style>
 </head>
 <body>
 
-  <header>
-    <div class="brand">● YOUR TEAM</div>
-    <button class="logout-btn" onclick="logout()">Logout</button>
-  </header>
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="brand-area">
+      <h2>REALTIME</h2>
+      <span>Conversion Monitor</span>
+    </div>
 
-  <div class="toolbar">
-    <h2>REALTIME CONVERSION <span class="live-badge">● LIVE</span></h2>
-    <div class="total">Total: <b id="total-payout">$0.00</b></div>
+    <div class="menu-list">
+      <button class="menu-btn active">⚡ Today</button>
+      <button class="menu-btn">🕒 Yesterday</button>
+      <button class="menu-btn">📊 Reports</button>
+    </div>
+
+    <div class="sidebar-section-title">
+      <span>Live Traffic</span>
+      <span id="live-count" style="background:var(--border); padding:1px 5px; border-radius:4px; font-size:9px;">0</span>
+    </div>
+    <div class="live-traffic-box" id="live-traffic-list">
+      <!-- Item live traffic masuk sini -->
+    </div>
+
+    <div class="sidebar-section-title"><span>Daily Performance</span></div>
+    <div class="perf-box" id="daily-perf-list">
+      <!-- Data performa harian per offer/network -->
+    </div>
+  </aside>
+
+  <!-- KONTEN UTAMA -->
+  <div class="main-content">
+    <header>
+      <div class="title-area">
+        <h1>REALTIME CONVERSION</h1>
+      </div>
+      <div class="header-right">
+        <div class="clock" id="clock">00:00:00 AM</div>
+        <div class="total-badge">Total: <b id="total-payout">$0.00</b></div>
+        <div class="live-pill">● LIVE</div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <input type="text" id="search-input" class="search-input" placeholder="Search by Click ID, Country, or IP..." onkeyup="filterTable()" />
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Network</th>
+            <th>Click ID</th>
+            <th>Country</th>
+            <th>Payout</th>
+            <th>IP</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody id="conversion-rows"></tbody>
+      </table>
+    </div>
   </div>
-
-  <div class="tabs" id="network-tabs">
-    <button class="active" data-network="all">All</button>
-    <button data-network="trafee">Trafee</button>
-    <button data-network="imonetizeit">iMonetizeIt</button>
-  </div>
-
-  <table>
-    <thead>
-      <tr>
-        <th>#</th><th>Network</th><th>Click ID</th><th>Country</th><th>Payout</th><th>IP</th><th>Time</th>
-      </tr>
-    </thead>
-    <tbody id="conversion-rows"></tbody>
-  </table>
 
   <div id="toast-container"></div>
 
 <script>
-  // ================= CONFIG =================
-  // Ini AMAN dipakai di frontend: anon key hanya bisa READ, dibatasi RLS policy
-  // "Public read access" di Supabase. Password dashboard TIDAK ADA di sini lagi —
-  // sudah dipindah ke server (functions/api/login.js), dicek sebelum halaman ini
-  // sempat dikirim ke browser (lihat functions/_middleware.js).
   const SUPABASE_URL = "https://lgbebnyzlgawauvyfjub.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnYmVibnl6bGdhd2F1dnlmanViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5NTA1ODAsImV4cCI6MjEwMTUyNjU4MH0.lZpf5XyC1GGxreTOpEYvk1gdZBIJI0XiFUWXMRbKjW0";
 
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  let currentFilter = "all";
+  let allConversions = [];
   let totalPayout = 0;
+
+  // Jam Realtime di Header
+  setInterval(() => {
+    const now = new Date();
+    document.getElementById("clock").textContent = now.toLocaleTimeString();
+  }, 1000);
 
   async function logout() {
     await fetch("/api/logout", { method: "POST" });
@@ -132,20 +206,64 @@
 
   function fmtMoney(n) { return "$" + Number(n).toFixed(2); }
 
-  function addRow(row, isNew) {
+  function renderTable(dataToRender) {
     const tbody = document.getElementById("conversion-rows");
-    const tr = document.createElement("tr");
-    if (isNew) tr.className = "new-row";
-    tr.innerHTML = `
-      <td>${tbody.children.length + 1}</td>
-      <td><span class="badge-network badge-${row.network}">${row.network.toUpperCase()}</span></td>
-      <td>${row.click_id ?? "-"}</td>
-      <td>${row.country ?? "-"}</td>
-      <td class="payout">${fmtMoney(row.payout)}</td>
-      <td>${row.ip ?? "-"}</td>
-      <td>${new Date(row.created_at).toLocaleTimeString()}</td>
+    tbody.innerHTML = "";
+    
+    dataToRender.forEach((row, index) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${index + 1}</td>
+        <td><span class="badge-network badge-${row.network}">${row.network.toUpperCase()}</span></td>
+        <td>${row.click_id ?? "-"}</td>
+        <td>${row.country ?? "-"}</td>
+        <td class="payout">${fmtMoney(row.payout)}</td>
+        <td>${row.ip ?? "-"}</td>
+        <td>${new Date(row.created_at).toLocaleTimeString()}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function updateSidebarWidgets(row) {
+    // Update Live Traffic Sidebar
+    const trafficList = document.getElementById("live-traffic-list");
+    const item = document.createElement("div");
+    item.className = "traffic-item";
+    item.innerHTML = `
+      <div>
+        <div class="name">${row.country || "GLOBAL"}</div>
+        <div class="ip">${row.ip || "Unknown IP"}</div>
+      </div>
+      <span class="payout">${fmtMoney(row.payout)}</span>
     `;
-    tbody.prepend(tr);
+    trafficList.prepend(item);
+    if (trafficList.children.length > 10) trafficList.lastChild.remove();
+    document.getElementById("live-count").textContent = trafficList.children.length;
+
+    // Update Daily Performance Ringkasan Sederhana
+    updateDailyPerformance();
+  }
+
+  function updateDailyPerformance() {
+    const perfMap = {};
+    allConversions.forEach(r => {
+      const key = r.offer_name || r.network.toUpperCase();
+      if (!perfMap[key]) perfMap[key] = { count: 0, sum: 0 };
+      perfMap[key].count += 1;
+      perfMap[key].sum += Number(r.payout || 0);
+    });
+
+    const perfContainer = document.getElementById("daily-perf-list");
+    perfContainer.innerHTML = "";
+    
+    Object.keys(perfMap).slice(0, 10).forEach(key => {
+      const p = perfMap[key];
+      const div = document.createElement("div");
+      div.className = "perf-row";
+      div.innerHTML = `<span>${key} x${p.count}</span><span>${fmtMoney(p.sum)}</span>`;
+      perfContainer.appendChild(div);
+    });
   }
 
   function showToast(row) {
@@ -157,25 +275,32 @@
     setTimeout(() => div.remove(), 4000);
   }
 
+  function filterTable() {
+    const keyword = document.getElementById("search-input").value.toLowerCase();
+    const filtered = allConversions.filter(r => 
+      (r.click_id && r.click_id.toLowerCase().includes(keyword)) ||
+      (r.country && r.country.toLowerCase().includes(keyword)) ||
+      (r.ip && r.ip.toLowerCase().includes(keyword))
+    );
+    renderTable(filtered);
+  }
+
   async function loadInitial() {
-    document.getElementById("conversion-rows").innerHTML = "";
-    totalPayout = 0;
     let query = supabaseClient
       .from("conversions")
       .select("*")
       .order("created_at", { ascending: false })
       .limit(100);
 
-    if (currentFilter !== "all") query = query.eq("network", currentFilter);
-
     const { data, error } = await query;
     if (error) { console.error(error); return; }
 
-    data.reverse().forEach((row) => {
-      addRow(row, false);
-      totalPayout += Number(row.payout || 0);
-    });
+    allConversions = data || [];
+    totalPayout = allConversions.reduce((acc, curr) => acc + Number(curr.payout || 0), 0);
+    
     document.getElementById("total-payout").textContent = fmtMoney(totalPayout);
+    renderTable(allConversions);
+    updateDailyPerformance();
   }
 
   function subscribeRealtime() {
@@ -186,28 +311,18 @@
         { event: "INSERT", schema: "public", table: "conversions" },
         (payload) => {
           const row = payload.new;
-          if (currentFilter !== "all" && row.network !== currentFilter) return;
-          addRow(row, true);
-          showToast(row);
+          allConversions.unshift(row);
           totalPayout += Number(row.payout || 0);
+          
           document.getElementById("total-payout").textContent = fmtMoney(totalPayout);
+          renderTable(allConversions);
+          updateSidebarWidgets(row);
+          showToast(row);
         }
       )
       .subscribe();
   }
 
-  function initTabs() {
-    document.querySelectorAll("#network-tabs button").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("#network-tabs button").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        currentFilter = btn.dataset.network;
-        loadInitial();
-      });
-    });
-  }
-
-  initTabs();
   loadInitial();
   subscribeRealtime();
 </script>
