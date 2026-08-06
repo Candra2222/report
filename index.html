@@ -35,57 +35,71 @@
     padding: 16px;
     gap: 16px;
     overflow-y: auto;
+    transition: transform 0.3s ease;
+    z-index: 100;
   }
+
+  .brand-area { display: flex; justify-content: space-between; align-items: center; }
   .brand-area h2 { font-size: 13px; margin: 0; color: var(--text); letter-spacing: .5px; }
   .brand-area span { font-size: 11px; color: var(--muted); }
+  
+  .close-sidebar {
+    background: transparent; border: none; color: var(--muted); font-size: 18px; cursor: pointer; display: none;
+  }
 
   .menu-list { display: flex; flex-direction: column; gap: 4px; }
   .menu-btn {
-    background: transparent; border: none; color: var(--muted); padding: 8px 12px;
+    background: transparent; border: none; color: var(--muted); padding: 10px 12px;
     border-radius: 6px; font-size: 12px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 8px;
   }
   .menu-btn:hover, .menu-btn.active { background: rgba(45,212,167,.1); color: var(--green); font-weight: 600; }
 
   /* KONTEN UTAMA KANAN */
-  .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; width: 100%; }
 
   header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--panel);
+    padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--panel);
+    gap: 10px; flex-wrap: wrap;
   }
-  header .title-area { display: flex; align-items: center; gap: 12px; }
-  header h1 { font-size: 14px; margin: 0; }
+  header .title-area { display: flex; align-items: center; gap: 10px; }
+  header h1 { font-size: 13px; margin: 0; }
   
-  .header-right { display: flex; align-items: center; gap: 16px; }
-  .clock { font-size: 12px; color: var(--muted); }
-  .total-badge { font-size: 13px; color: var(--muted); }
+  .menu-toggle {
+    background: transparent; border: 1px solid var(--border); color: var(--text);
+    padding: 4px 8px; border-radius: 6px; font-size: 14px; cursor: pointer; display: none;
+  }
+
+  .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .clock { font-size: 11px; color: var(--muted); display: none; }
+  .total-badge { font-size: 12px; color: var(--muted); }
   .total-badge b { color: var(--green); }
   .live-pill { background: rgba(45,212,167,.15); color: var(--green); font-size: 10px; padding: 2px 8px; border-radius: 999px; }
   
   .logout-btn {
     background: transparent; border: 1px solid var(--border); color: var(--muted);
-    padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;
+    padding: 4px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;
   }
   .logout-btn:hover { border-color: var(--green); color: var(--green); }
 
   /* TOOLBAR & FILTER */
-  .toolbar { padding: 12px 20px; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid var(--border); background: rgba(16,22,42,0.4); flex-wrap: wrap; }
+  .toolbar { padding: 10px 16px; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid var(--border); background: rgba(16,22,42,0.4); flex-wrap: wrap; }
   .search-input {
-    flex: 1; min-width: 200px; background: var(--panel); border: 1px solid var(--border); color: var(--text);
-    padding: 7px 12px; border-radius: 6px; font-size: 12px; outline: none;
+    flex: 1; min-width: 160px; background: var(--panel); border: 1px solid var(--border); color: var(--text);
+    padding: 7px 10px; border-radius: 6px; font-size: 12px; outline: none;
   }
   .search-input:focus { border-color: var(--green); }
 
-  .filter-group { display: flex; gap: 8px; align-items: center; }
+  .filter-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; width: 100%; }
   .network-select, .date-input {
     background: var(--panel); border: 1px solid var(--border); color: var(--text);
-    padding: 6px 10px; border-radius: 6px; font-size: 11px; outline: none; cursor: pointer;
+    padding: 6px 8px; border-radius: 6px; font-size: 11px; outline: none; cursor: pointer; flex: 1;
   }
   .network-select:focus, .date-input:focus { border-color: var(--green); }
 
   /* TABEL DATA */
-  .table-container { flex: 1; overflow-y: auto; padding: 0 20px 20px; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }
+  .table-container { flex: 1; overflow-y: auto; overflow-x: auto; padding: 0 16px 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; min-width: 600px; }
   thead th {
     text-align: left; color: var(--muted); font-weight: 500; font-size: 10px;
     text-transform: uppercase; padding: 10px 12px; border-bottom: 1px solid var(--border);
@@ -101,21 +115,67 @@
     font-weight: bold; background: rgba(16,22,42,0.6); border-top: 2px solid var(--border);
   }
 
-  #toast-container { position: fixed; bottom: 16px; right: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 50; }
+  #toast-container { position: fixed; bottom: 16px; right: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 50; max-width: 90%; }
   .toast {
     background: var(--panel); border: 1px solid var(--green); border-radius: 8px;
     padding: 8px 12px; font-size: 11px; min-width: 200px; animation: slidein .3s ease;
   }
   @keyframes slidein { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* RESPONSIF MEDIA QUERIES UNTUK HP */
+  @media (max-width: 768px) {
+    aside {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      transform: translateX(-100%);
+    }
+    aside.open {
+      transform: translateX(0);
+    }
+    .close-sidebar {
+      display: block;
+    }
+    .menu-toggle {
+      display: inline-block;
+    }
+    .clock {
+      display: none;
+    }
+    .filter-group {
+      justify-content: space-between;
+    }
+    .toolbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .search-input {
+      width: 100%;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .clock {
+      display: block;
+    }
+    .filter-group {
+      width: auto;
+    }
+    .network-select, .date-input {
+      flex: unset;
+    }
+  }
 </style>
 </head>
 <body>
 
   <!-- SIDEBAR -->
-  <aside>
+  <aside id="sidebar">
     <div class="brand-area">
-      <h2>REALTIME</h2>
-      <span>Conversion Monitor</span>
+      <div>
+        <h2>REALTIME</h2>
+        <span>Conversion Monitor</span>
+      </div>
+      <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
     </div>
 
     <div class="menu-list" id="sidebar-nav">
@@ -129,6 +189,7 @@
   <div class="main-content">
     <header>
       <div class="title-area">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
         <h1 id="page-title">REALTIME CONVERSION</h1>
       </div>
       <div class="header-right">
@@ -140,17 +201,15 @@
     </header>
 
     <div class="toolbar">
-      <input type="text" id="search-input" class="search-input" placeholder="Search by Click ID, Country, or IP..." onkeyup="applyFilters()" />
+      <input type="text" id="search-input" class="search-input" placeholder="Search Click ID, Country, IP..." onkeyup="applyFilters()" />
       
       <div class="filter-group">
-        <!-- Pilihan Network (All, Trafee, iMonetizeIt) di setiap halaman -->
         <select id="network-filter" class="network-select" onchange="applyFilters()">
           <option value="all">All Networks</option>
           <option value="trafee">Trafee</option>
           <option value="imonetizeit">iMonetizeIt</option>
         </select>
 
-        <!-- Pengaturan Rentang Tanggal -->
         <input type="date" id="date-start" class="date-input" onchange="applyFilters()" />
         <span style="font-size:11px; color:var(--muted);">s/d</span>
         <input type="date" id="date-end" class="date-input" onchange="applyFilters()" />
@@ -176,7 +235,6 @@
   let allConversions = [];
   let currentPage = "today";
 
-  // Set default tanggal hari ini
   const todayIso = new Date().toISOString().split('T')[0];
   document.getElementById("date-start").value = todayIso;
   document.getElementById("date-end").value = todayIso;
@@ -185,6 +243,11 @@
     document.getElementById("clock").textContent = new Date().toLocaleTimeString();
   }, 1000);
 
+  function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    sidebar.classList.toggle("open");
+  }
+
   async function logout() {
     await fetch("/api/logout", { method: "POST" });
     window.location.href = "/login.html";
@@ -192,26 +255,22 @@
 
   function fmtMoney(n) { return "$" + Number(n).toFixed(2); }
 
-  // Fungsi untuk mengubah kode negara menjadi bendera lingkaran
   function countryToFlag(countryCode) {
     if (!countryCode) return "🌐";
     const cleanCode = countryCode.trim().split(/\s+/)[0].toLowerCase();
-    
     if (cleanCode.length !== 2) return countryCode;
-
     return `<img src="https://flagcdn.com/w40/${cleanCode}.png" alt="${cleanCode}" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover; vertical-align: middle;" />`;
   }
 
-  // Fungsi untuk mengubah teks network menjadi logo kustom
   function networkToLogo(networkName) {
     if (!networkName) return "-";
     const net = networkName.trim().toLowerCase();
 
     let logoUrl = "";
     if (net === "trafee") {
-      logoUrl = "/assets/trafee.png"; // Ganti dengan link/path logo Trafee kamu
+      logoUrl = "/assets/trafee.png";
     } else if (net === "imonetizeit") {
-      logoUrl = "/assets/imo.png"; // Ganti dengan link/path logo iMonetizeIt kamu
+      logoUrl = "/assets/imo.png";
     } else {
       return networkName.toUpperCase();
     }
@@ -225,7 +284,6 @@
     tbody.innerHTML = "";
 
     if (currentPage === "reports") {
-      // TAMPILAN REPORTS: Total hasil per ID (Click ID / Smartlink)
       thead.innerHTML = `
         <tr>
           <th>#</th>
@@ -280,7 +338,6 @@
       document.getElementById("total-payout").textContent = fmtMoney(totalSum);
 
     } else {
-      // TAMPILAN TODAY / YESTERDAY
       thead.innerHTML = `
         <tr>
           <th>#</th>
@@ -366,6 +423,11 @@
       currentPage = btn.dataset.page;
       document.getElementById("page-title").textContent = currentPage.toUpperCase() + " CONVERSION";
       applyFilters();
+
+      // Tutup sidebar otomatis di HP setelah memilih menu
+      if (window.innerWidth <= 768) {
+        toggleSidebar();
+      }
     });
   });
 
