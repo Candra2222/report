@@ -7,120 +7,149 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --bg: #0b0f19;
-    --panel: #10162a;
-    --border: #1f2740;
-    --green: #2dd4a7;
-    --text: #e6e9f2;
-    --muted: #8b93a8;
+    --bg: #07090e;
+    --panel: #0d121f;
+    --panel-hover: #151c2e;
+    --border: #1a233a;
+    --border-focus: #283559;
+    --green: #10b981;
+    --green-glow: rgba(16, 185, 129, 0.15);
+    --text: #f1f5f9;
+    --muted: #64748b;
+    --muted-light: #94a3b8;
   }
+  
   * { box-sizing: border-box; }
+  
   body {
     margin: 0;
-    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: var(--bg);
     color: var(--text);
     display: flex;
     height: 100vh;
     overflow: hidden;
+    -webkit-font-smoothing: antialiased;
   }
 
   /* SIDEBAR KIRI */
   aside {
-    width: 240px;
+    width: 220px;
     background: var(--panel);
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    padding: 16px;
-    gap: 16px;
+    padding: 12px;
+    gap: 12px;
     overflow-y: auto;
-    transition: transform 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 100;
   }
 
-  .brand-area { display: flex; justify-content: space-between; align-items: center; }
-  .brand-area h2 { font-size: 13px; margin: 0; color: var(--text); letter-spacing: .5px; }
-  .brand-area span { font-size: 11px; color: var(--muted); }
+  /* State Sidebar Tertutup di Desktop */
+  aside.collapsed {
+    width: 0;
+    padding: 0;
+    border-right: none;
+    overflow: hidden;
+  }
+
+  .brand-area { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 6px 8px;
+  }
+  .brand-area h2 { font-size: 11px; margin: 0; color: var(--text); letter-spacing: .8px; font-weight: 700; }
+  .brand-area span { font-size: 10px; color: var(--muted); }
   
   .close-sidebar {
-    background: transparent; border: none; color: var(--muted); font-size: 18px; cursor: pointer; display: none;
+    background: transparent; border: none; color: var(--muted); font-size: 16px; cursor: pointer; display: none;
+    padding: 4px;
   }
 
-  .menu-list { display: flex; flex-direction: column; gap: 4px; }
+  .menu-list { display: flex; flex-direction: column; gap: 3px; }
   .menu-btn {
-    background: transparent; border: none; color: var(--muted); padding: 10px 12px;
-    border-radius: 6px; font-size: 12px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 8px;
+    background: transparent; border: none; color: var(--muted-light); padding: 8px 10px;
+    border-radius: 5px; font-size: 11px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 8px;
+    font-weight: 500; transition: all 0.2s ease;
   }
-  .menu-btn:hover, .menu-btn.active { background: rgba(45,212,167,.1); color: var(--green); font-weight: 600; }
+  .menu-btn:hover { background: var(--panel-hover); color: var(--text); }
+  .menu-btn.active { background: var(--green-glow); color: var(--green); font-weight: 600; }
 
   /* KONTEN UTAMA KANAN */
-  .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; width: 100%; }
+  .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; width: 100%; background: var(--bg); }
 
   header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--panel);
-    gap: 10px; flex-wrap: wrap;
+    padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--panel);
+    gap: 10px; flex-wrap: nowrap;
   }
-  header .title-area { display: flex; align-items: center; gap: 10px; }
-  header h1 { font-size: 13px; margin: 0; }
+  header .title-area { display: flex; align-items: center; gap: 8px; }
+  header h1 { font-size: 12px; margin: 0; font-weight: 600; letter-spacing: 0.5px; }
   
   .menu-toggle {
-    background: transparent; border: 1px solid var(--border); color: var(--text);
-    padding: 4px 8px; border-radius: 6px; font-size: 14px; cursor: pointer; display: none;
+    background: transparent; border: 1px solid var(--border); color: var(--muted-light);
+    padding: 4px 8px; border-radius: 5px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
   }
+  .menu-toggle:hover { border-color: var(--border-focus); color: var(--text); }
 
-  .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .clock { font-size: 11px; color: var(--muted); display: none; }
-  .total-badge { font-size: 12px; color: var(--muted); }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .clock { font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .total-badge { font-size: 11px; color: var(--muted); background: rgba(255,255,255,0.02); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border); }
   .total-badge b { color: var(--green); }
-  .live-pill { background: rgba(45,212,167,.15); color: var(--green); font-size: 10px; padding: 2px 8px; border-radius: 999px; }
+  .live-pill { background: var(--green-glow); color: var(--green); font-size: 9px; padding: 2px 6px; border-radius: 999px; font-weight: 600; letter-spacing: 0.5px; }
   
   .logout-btn {
-    background: transparent; border: 1px solid var(--border); color: var(--muted);
-    padding: 4px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;
+    background: transparent; border: 1px solid var(--border); color: var(--muted-light);
+    padding: 4px 8px; border-radius: 5px; font-size: 10px; cursor: pointer; font-weight: 500;
+    transition: all 0.2s;
   }
-  .logout-btn:hover { border-color: var(--green); color: var(--green); }
+  .logout-btn:hover { border-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.05); }
 
   /* TOOLBAR & FILTER */
-  .toolbar { padding: 10px 16px; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid var(--border); background: rgba(16,22,42,0.4); flex-wrap: wrap; }
+  .toolbar { padding: 10px 16px; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid var(--border); background: var(--bg); flex-wrap: wrap; }
   .search-input {
-    flex: 1; min-width: 160px; background: var(--panel); border: 1px solid var(--border); color: var(--text);
-    padding: 7px 10px; border-radius: 6px; font-size: 12px; outline: none;
+    flex: 1; min-width: 180px; background: var(--panel); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 10px; border-radius: 5px; font-size: 11px; outline: none; transition: border-color 0.2s;
   }
   .search-input:focus { border-color: var(--green); }
+  .search-input::placeholder { color: var(--muted); }
 
-  .filter-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; width: 100%; }
+  .filter-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .network-select, .date-input {
-    background: var(--panel); border: 1px solid var(--border); color: var(--text);
-    padding: 6px 8px; border-radius: 6px; font-size: 11px; outline: none; cursor: pointer; flex: 1;
+    background: var(--panel); border: 1px solid var(--border); color: var(--muted-light);
+    padding: 6px 8px; border-radius: 5px; font-size: 10px; outline: none; cursor: pointer;
+    transition: border-color 0.2s;
   }
-  .network-select:focus, .date-input:focus { border-color: var(--green); }
+  .network-select:focus, .date-input:focus { border-color: var(--green); color: var(--text); }
 
   /* TABEL DATA */
   .table-container { flex: 1; overflow-y: auto; overflow-x: auto; padding: 0 16px 16px; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; min-width: 600px; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; min-width: 580px; }
   thead th {
-    text-align: left; color: var(--muted); font-weight: 500; font-size: 10px;
-    text-transform: uppercase; padding: 10px 12px; border-bottom: 1px solid var(--border);
+    text-align: left; color: var(--muted); font-weight: 600; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 10px; border-bottom: 1px solid var(--border);
     background: var(--bg); position: sticky; top: 0; z-index: 10;
   }
-  tbody td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody td { padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--muted-light); }
+  tbody tr:hover { background: rgba(255, 255, 255, 0.01); }
   tbody tr.new-row { animation: flash 1.2s ease; }
-  @keyframes flash { from { background: rgba(45,212,167,.25); } to { background: transparent; } }
+  @keyframes flash { from { background: rgba(16,185,129,.2); } to { background: transparent; } }
 
   .payout { color: var(--green); font-weight: 600; }
   
   .table-footer-total {
-    font-weight: bold; background: rgba(16,22,42,0.6); border-top: 2px solid var(--border);
+    font-weight: 600; background: var(--panel); border-top: 2px solid var(--border); color: var(--text);
   }
 
-  #toast-container { position: fixed; bottom: 16px; right: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 50; max-width: 90%; }
+  #toast-container { position: fixed; bottom: 16px; right: 16px; display: flex; flex-direction: column; gap: 6px; z-index: 50; max-width: 90%; }
   .toast {
-    background: var(--panel); border: 1px solid var(--green); border-radius: 8px;
-    padding: 8px 12px; font-size: 11px; min-width: 200px; animation: slidein .3s ease;
+    background: var(--panel); border: 1px solid var(--green); border-radius: 6px;
+    padding: 8px 12px; font-size: 10px; min-width: 180px; animation: slidein .25s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   }
-  @keyframes slidein { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes slidein { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
   /* RESPONSIF MEDIA QUERIES UNTUK HP */
   @media (max-width: 768px) {
@@ -128,6 +157,7 @@
       position: fixed;
       top: 0; left: 0; bottom: 0;
       transform: translateX(-100%);
+      width: 220px !important;
     }
     aside.open {
       transform: translateX(0);
@@ -135,33 +165,22 @@
     .close-sidebar {
       display: block;
     }
-    .menu-toggle {
-      display: inline-block;
-    }
     .clock {
       display: none;
-    }
-    .filter-group {
-      justify-content: space-between;
     }
     .toolbar {
       flex-direction: column;
       align-items: stretch;
+      gap: 6px;
     }
     .search-input {
       width: 100%;
     }
-  }
-
-  @media (min-width: 769px) {
-    .clock {
-      display: block;
-    }
     .filter-group {
-      width: auto;
+      justify-content: space-between;
     }
     .network-select, .date-input {
-      flex: unset;
+      flex: 1;
     }
   }
 </style>
@@ -173,7 +192,7 @@
     <div class="brand-area">
       <div>
         <h2>REALTIME</h2>
-        <span>Conversion Monitor</span>
+        <span>Monitor</span>
       </div>
       <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
     </div>
@@ -189,19 +208,19 @@
   <div class="main-content">
     <header>
       <div class="title-area">
-        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <button class="menu-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">☰</button>
         <h1 id="page-title">REALTIME CONVERSION</h1>
       </div>
       <div class="header-right">
-        <div class="clock" id="clock">00:00:00 AM</div>
+        <div class="clock" id="clock">00:00:00</div>
         <div class="total-badge">Total: <b id="total-payout">$0.00</b></div>
-        <div class="live-pill">● LIVE</div>
+        <div class="live-pill">LIVE</div>
         <button class="logout-btn" onclick="logout()">Logout</button>
       </div>
     </header>
 
     <div class="toolbar">
-      <input type="text" id="search-input" class="search-input" placeholder="Search Click ID, Country, IP..." onkeyup="applyFilters()" />
+      <input type="text" id="search-input" class="search-input" placeholder="Cari Click ID, Country, IP..." onkeyup="applyFilters()" />
       
       <div class="filter-group">
         <select id="network-filter" class="network-select" onchange="applyFilters()">
@@ -211,7 +230,7 @@
         </select>
 
         <input type="date" id="date-start" class="date-input" onchange="applyFilters()" />
-        <span style="font-size:11px; color:var(--muted);">s/d</span>
+        <span style="font-size:10px; color:var(--muted);">s/d</span>
         <input type="date" id="date-end" class="date-input" onchange="applyFilters()" />
       </div>
     </div>
@@ -245,7 +264,11 @@
 
   function toggleSidebar() {
     const sidebar = document.getElementById("sidebar");
-    sidebar.classList.toggle("open");
+    if (window.innerWidth <= 768) {
+      sidebar.classList.toggle("open");
+    } else {
+      sidebar.classList.toggle("collapsed");
+    }
   }
 
   async function logout() {
@@ -259,7 +282,7 @@
     if (!countryCode) return "🌐";
     const cleanCode = countryCode.trim().split(/\s+/)[0].toLowerCase();
     if (cleanCode.length !== 2) return countryCode;
-    return `<img src="https://flagcdn.com/w40/${cleanCode}.png" alt="${cleanCode}" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover; vertical-align: middle;" />`;
+    return `<img src="https://flagcdn.com/w40/${cleanCode}.png" alt="${cleanCode}" style="width: 16px; height: 16px; border-radius: 50%; object-fit: cover; vertical-align: middle;" />`;
   }
 
   function networkToLogo(networkName) {
@@ -275,7 +298,7 @@
       return networkName.toUpperCase();
     }
 
-    return `<img src="${logoUrl}" alt="${net}" style="height: 20px; object-fit: contain; vertical-align: middle;" />`;
+    return `<img src="${logoUrl}" alt="${net}" style="height: 16px; object-fit: contain; vertical-align: middle;" />`;
   }
   
   function renderView(data) {
@@ -314,7 +337,7 @@
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${index + 1}</td>
-          <td><b>${item.click_id}</b></td>
+          <td><b style="color:var(--text);">${item.click_id}</b></td>
           <td>${networkToLogo(item.network)}</td>
           <td>${item.count}</td>
           <td class="payout">${fmtMoney(item.payout)}</td>
@@ -424,7 +447,6 @@
       document.getElementById("page-title").textContent = currentPage.toUpperCase() + " CONVERSION";
       applyFilters();
 
-      // Tutup sidebar otomatis di HP setelah memilih menu
       if (window.innerWidth <= 768) {
         toggleSidebar();
       }
