@@ -48,8 +48,7 @@
 
   .sidebar-section-title { font-size: 10px; text-transform: uppercase; color: var(--muted); margin-top: 8px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
   
-  /* LIVE TRAFFIC WIDGET DI SIDEBAR */
-  .live-traffic-box { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+  .live-traffic-box { display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; }
   .traffic-item {
     background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 6px 8px;
     border-radius: 6px; font-size: 11px; display: flex; justify-content: space-between; align-items: center;
@@ -57,7 +56,6 @@
   .traffic-item .name { font-weight: 600; color: var(--text); }
   .traffic-item .ip { color: var(--muted); font-size: 10px; }
 
-  /* DAILY PERFORMANCE WIDGET */
   .perf-box { display: flex; flex-direction: column; gap: 4px; }
   .perf-row { display: flex; justify-content: space-between; font-size: 11px; padding: 4px 6px; background: rgba(255,255,255,0.01); border-radius: 4px; }
   .perf-row span:last-child { color: var(--green); font-weight: 600; }
@@ -84,13 +82,20 @@
   }
   .logout-btn:hover { border-color: var(--green); color: var(--green); }
 
-  /* TOOLBAR PENCARIAN */
-  .toolbar { padding: 12px 20px; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid var(--border); }
+  /* TOOLBAR & FILTER */
+  .toolbar { padding: 12px 20px; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid var(--border); background: rgba(16,22,42,0.4); flex-wrap: wrap; }
   .search-input {
-    flex: 1; background: var(--panel); border: 1px solid var(--border); color: var(--text);
-    padding: 8px 12px; border-radius: 6px; font-size: 12px; outline: none;
+    flex: 1; min-width: 200px; background: var(--panel); border: 1px solid var(--border); color: var(--text);
+    padding: 7px 12px; border-radius: 6px; font-size: 12px; outline: none;
   }
   .search-input:focus { border-color: var(--green); }
+
+  .filter-group { display: flex; gap: 8px; align-items: center; }
+  .network-select, .date-input {
+    background: var(--panel); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 10px; border-radius: 6px; font-size: 11px; outline: none; cursor: pointer;
+  }
+  .network-select:focus, .date-input:focus { border-color: var(--green); }
 
   /* TABEL DATA */
   .table-container { flex: 1; overflow-y: auto; padding: 0 20px 20px; }
@@ -98,7 +103,7 @@
   thead th {
     text-align: left; color: var(--muted); font-weight: 500; font-size: 10px;
     text-transform: uppercase; padding: 10px 12px; border-bottom: 1px solid var(--border);
-    background: var(--bg); position: sticky; top: 0;
+    background: var(--bg); position: sticky; top: 0; z-index: 10;
   }
   tbody td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
   tbody tr.new-row { animation: flash 1.2s ease; }
@@ -108,6 +113,10 @@
   .badge-trafee { background: #3730a3; color: #c7d2fe; }
   .badge-imonetizeit { background: #7c2d12; color: #fed7aa; }
   .payout { color: var(--green); font-weight: 600; }
+  
+  .table-footer-total {
+    font-weight: bold; background: rgba(16,22,42,0.6); border-top: 2px solid var(--border);
+  }
 
   #toast-container { position: fixed; bottom: 16px; right: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 50; }
   .toast {
@@ -126,31 +135,27 @@
       <span>Conversion Monitor</span>
     </div>
 
-    <div class="menu-list">
-      <button class="menu-btn active">⚡ Today</button>
-      <button class="menu-btn">🕒 Yesterday</button>
-      <button class="menu-btn">📊 Reports</button>
+    <div class="menu-list" id="sidebar-nav">
+      <button class="menu-btn active" data-page="today">⚡ Today</button>
+      <button class="menu-btn" data-page="yesterday">🕒 Yesterday</button>
+      <button class="menu-btn" data-page="reports">📊 Reports</button>
     </div>
 
     <div class="sidebar-section-title">
       <span>Live Traffic</span>
       <span id="live-count" style="background:var(--border); padding:1px 5px; border-radius:4px; font-size:9px;">0</span>
     </div>
-    <div class="live-traffic-box" id="live-traffic-list">
-      <!-- Item live traffic masuk sini -->
-    </div>
+    <div class="live-traffic-box" id="live-traffic-list"></div>
 
-    <div class="sidebar-section-title"><span>Daily Performance</span></div>
-    <div class="perf-box" id="daily-perf-list">
-      <!-- Data performa harian per offer/network -->
-    </div>
+    <div class="sidebar-section-title"><span>Top Performance</span></div>
+    <div class="perf-box" id="daily-perf-list"></div>
   </aside>
 
   <!-- KONTEN UTAMA -->
   <div class="main-content">
     <header>
       <div class="title-area">
-        <h1>REALTIME CONVERSION</h1>
+        <h1 id="page-title">REALTIME CONVERSION</h1>
       </div>
       <div class="header-right">
         <div class="clock" id="clock">00:00:00 AM</div>
@@ -161,21 +166,27 @@
     </header>
 
     <div class="toolbar">
-      <input type="text" id="search-input" class="search-input" placeholder="Search by Click ID, Country, or IP..." onkeyup="filterTable()" />
+      <input type="text" id="search-input" class="search-input" placeholder="Search by Click ID, Country, or IP..." onkeyup="applyFilters()" />
+      
+      <div class="filter-group">
+        <!-- Pilihan Network (All, Trafee, iMonetizeIt) di setiap halaman -->
+        <select id="network-filter" class="network-select" onchange="applyFilters()">
+          <option value="all">All Networks</option>
+          <option value="trafee">Trafee</option>
+          <option value="imonetizeit">iMonetizeIt</option>
+        </select>
+
+        <!-- Pengaturan Tanggal (Khusus / Utama) -->
+        <input type="date" id="date-start" class="date-input" onchange="applyFilters()" />
+        <span style="font-size:11px; color:var(--muted);">s/d</span>
+        <input type="date" id="date-end" class="date-input" onchange="applyFilters()" />
+      </div>
     </div>
 
     <div class="table-container">
       <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Network</th>
-            <th>Click ID</th>
-            <th>Country</th>
-            <th>Payout</th>
-            <th>IP</th>
-            <th>Time</th>
-          </tr>
+        <thead id="table-head">
+          <!-- Header tabel berubah dinamis tergantung halaman -->
         </thead>
         <tbody id="conversion-rows"></tbody>
       </table>
@@ -191,12 +202,15 @@
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let allConversions = [];
-  let currentFilterMode = "today"; // "today", "yesterday", "reports"
+  let currentPage = "today"; // "today", "yesterday", "reports"
 
-  // Jam Realtime di Header
+  // Set default tanggal hari ini pada input date
+  const todayIso = new Date().toISOString().split('T')[0];
+  document.getElementById("date-start").value = todayIso;
+  document.getElementById("date-end").value = todayIso;
+
   setInterval(() => {
-    const now = new Date();
-    document.getElementById("clock").textContent = now.toLocaleTimeString();
+    document.getElementById("clock").textContent = new Date().toLocaleTimeString();
   }, 1000);
 
   async function logout() {
@@ -206,78 +220,167 @@
 
   function fmtMoney(n) { return "$" + Number(n).toFixed(2); }
 
-  function renderTable(dataToRender) {
+  // Render Tabel Berdasarkan Halaman yang Aktif
+  function renderView(data) {
+    const thead = document.getElementById("table-head");
     const tbody = document.getElementById("conversion-rows");
     tbody.innerHTML = "";
-    
-    dataToRender.forEach((row, index) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${index + 1}</td>
-        <td><span class="badge-network badge-${row.network}">${row.network.toUpperCase()}</span></td>
-        <td>${row.click_id ?? "-"}</td>
-        <td>${row.country ?? "-"}</td>
-        <td class="payout">${fmtMoney(row.payout)}</td>
-        <td>${row.ip ?? "-"}</td>
-        <td>${new Date(row.created_at).toLocaleTimeString()}</td>
+
+    if (currentPage === "reports") {
+      // TAMPILAN REPORTS: Mengelompokkan Total Hasil per ID (Click ID / Smartlink)
+      thead.innerHTML = `
+        <tr>
+          <th>#</th>
+          <th>Smartlink / Click ID</th>
+          <th>Network</th>
+          <th>Clicks / Conversions</th>
+          <th>Payouts</th>
+        </tr>
       `;
-      tbody.appendChild(tr);
-    });
-  }
 
-  // Fungsi untuk memfilter data berdasarkan tombol sidebar yang dipilih
-  function getFilteredData() {
-    const now = new Date();
-    const todayStr = now.toDateString();
-    
-    const yesterday = new Date();
-    yesterday.setDate(now.getDate() - 1);
-    const yesterdayStr = yesterday.toDateString();
+      // Kelompokkan data berdasarkan Click ID
+      const grouped = {};
+      data.forEach(row => {
+        const id = row.click_id || "UNKNOWN";
+        if (!grouped[id]) {
+          grouped[id] = { click_id: id, network: row.network, count: 0, payout: 0 };
+        }
+        grouped[id].count += 1;
+        grouped[id].payout += Number(row.payout || 0);
+      });
 
-    return allConversions.filter(row => {
-      const rowDate = new Date(row.created_at).toDateString();
-      if (currentFilterMode === "today") {
-        return rowDate === todayStr;
-      } else if (currentFilterMode === "yesterday") {
-        return rowDate === yesterdayStr;
-      } else {
-        // "reports" menampilkan semua data atau bisa disesuaikan
-        return true;
+      const groupedArray = Object.values(grouped).sort((a, b) => b.payout - a.payout);
+      let totalSum = 0;
+      let totalCount = 0;
+
+      groupedArray.forEach((item, index) => {
+        totalSum += item.payout;
+        totalCount += item.count;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td><b>${item.click_id}</b></td>
+          <td><span class="badge-network badge-${item.network}">${item.network.toUpperCase()}</span></td>
+          <td>${item.count}</td>
+          <td class="payout">${fmtMoney(item.payout)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Baris Total di Bawah Tabel Reports
+      if (groupedArray.length > 0) {
+        const trTotal = document.createElement("tr");
+        trTotal.className = "table-footer-total";
+        trTotal.innerHTML = `
+          <td>TOTAL</td>
+          <td>-</td>
+          <td>-</td>
+          <td>${totalCount}</td>
+          <td class="payout">${fmtMoney(totalSum)}</td>
+        `;
+        tbody.appendChild(trTotal);
       }
+
+      document.getElementById("total-payout").textContent = fmtMoney(totalSum);
+
+    } else {
+      // TAMPILAN TODAY / YESTERDAY (Tabel transaksi biasa secara real-time)
+      thead.innerHTML = `
+        <tr>
+          <th>#</th>
+          <th>Network</th>
+          <th>Click ID</th>
+          <th>Country</th>
+          <th>Payout</th>
+          <th>IP</th>
+          <th>Time</th>
+        </tr>
+      `;
+
+      let totalSum = 0;
+      data.forEach((row, index) => {
+        totalSum += Number(row.payout || 0);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td><span class="badge-network badge-${row.network}">${row.network.toUpperCase()}</span></td>
+          <td>${row.click_id ?? "-"}</td>
+          <td>${row.country ?? "-"}</td>
+          <td class="payout">${fmtMoney(row.payout)}</td>
+          <td>${row.ip ?? "-"}</td>
+          <td>${new Date(row.created_at).toLocaleTimeString()}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("total-payout").textContent = fmtMoney(totalSum);
+    }
+
+    updateSidebarWidgets(data);
+  }
+
+  // Filter Data Berdasarkan Tanggal, Network, dan Keyword Pencarian
+  function applyFilters() {
+    const keyword = document.getElementById("search-input").value.toLowerCase();
+    const selectedNetwork = document.getElementById("network-filter").value;
+    const dateStartVal = document.getElementById("date-start").value;
+    const dateEndVal = document.getElementById("date-end").value;
+
+    const filtered = allConversions.filter(row => {
+      const rowDateObj = new Date(row.created_at);
+      const rowDateStr = rowDateObj.toISOString().split('T')[0];
+
+      // 1. Filter Halaman (Sidebar Mode)
+      const nowStr = new Date().toISOString().split('T')[0];
+      const yestObj = new Date();
+      yestObj.setDate(yestObj.getDate() - 1);
+      const yestStr = yestObj.toISOString().split('T')[0];
+
+      if (currentPage === "today" && rowDateStr !== nowStr) return false;
+      if (currentPage === "yesterday" && rowDateStr !== yestStr) return false;
+
+      // 2. Filter Tanggal Kustom (khususnya untuk halaman Reports atau filter tambahan)
+      if (dateStartVal && rowDateStr < dateStartVal) return false;
+      if (dateEndVal && rowDateStr > dateEndVal) return false;
+
+      // 3. Filter Network (All, Trafee, iMonetizeIt)
+      if (selectedNetwork !== "all" && row.network !== selectedNetwork) return false;
+
+      // 4. Filter Keyword Search
+      if (keyword) {
+        const matchId = row.click_id && row.click_id.toLowerCase().includes(keyword);
+        const matchCountry = row.country && row.country.toLowerCase().includes(keyword);
+        const matchIp = row.ip && row.ip.toLowerCase().includes(keyword);
+        if (!matchId && !matchCountry && !matchIp) return false;
+      }
+
+      return true;
     });
+
+    renderView(filtered);
   }
 
-  function updateDashboardView() {
-    const filteredData = getFilteredData();
-    
-    // Hitung total payout berdasarkan data yang sedang aktif difilter
-    const total = filteredData.reduce((acc, curr) => acc + Number(curr.payout || 0), 0);
-    document.getElementById("total-payout").textContent = fmtMoney(total);
-    
-    renderTable(filteredData);
-    updateDailyPerformance(filteredData);
-  }
-
-  function updateSidebarWidgets(row) {
+  function updateSidebarWidgets(currentData) {
+    // Update Widget Live Traffic
     const trafficList = document.getElementById("live-traffic-list");
-    const item = document.createElement("div");
-    item.className = "traffic-item";
-    item.innerHTML = `
-      <div>
-        <div class="name">${row.country || "GLOBAL"}</div>
-        <div class="ip">${row.ip || "Unknown IP"}</div>
-      </div>
-      <span class="payout">${fmtMoney(row.payout)}</span>
-    `;
-    trafficList.prepend(item);
-    if (trafficList.children.length > 10) trafficList.lastChild.remove();
-    document.getElementById("live-count").textContent = trafficList.children.length;
-  }
+    trafficList.innerHTML = "";
+    currentData.slice(0, 8).forEach(row => {
+      const item = document.createElement("div");
+      item.className = "traffic-item";
+      item.innerHTML = `
+        <div>
+          <div class="name">${row.country || "GLOBAL"}</div>
+          <div class="ip">${row.ip || "Unknown IP"}</div>
+        </div>
+        <span class="payout">${fmtMoney(row.payout)}</span>
+      `;
+      trafficList.appendChild(item);
+    });
+    document.getElementById("live-count").textContent = currentData.length;
 
-  function updateDailyPerformance(dataToProcess) {
+    // Update Top Performance Berdasarkan ID
     const perfMap = {};
-    dataToProcess.forEach(r => {
-      // Mengelompokkan berdasarkan Click ID atau Network/Offer
+    currentData.forEach(r => {
       const key = r.click_id ? `ID: ${r.click_id}` : (r.network.toUpperCase());
       if (!perfMap[key]) perfMap[key] = { count: 0, sum: 0 };
       perfMap[key].count += 1;
@@ -286,10 +389,7 @@
 
     const perfContainer = document.getElementById("daily-perf-list");
     perfContainer.innerHTML = "";
-    
-    const sortedKeys = Object.keys(perfMap).sort((a, b) => perfMap[b].sum - perfMap[a].sum);
-
-    sortedKeys.slice(0, 15).forEach(key => {
+    Object.keys(perfMap).sort((a, b) => perfMap[b].sum - perfMap[a].sum).slice(0, 10).forEach(key => {
       const p = perfMap[key];
       const div = document.createElement("div");
       div.className = "perf-row";
@@ -307,46 +407,30 @@
     setTimeout(() => div.remove(), 4000);
   }
 
-  function filterTable() {
-    const keyword = document.getElementById("search-input").value.toLowerCase();
-    const filteredBase = getFilteredData();
-    const filtered = filteredBase.filter(r => 
-      (r.click_id && r.click_id.toLowerCase().includes(keyword)) ||
-      (r.country && r.country.toLowerCase().includes(keyword)) ||
-      (r.ip && r.ip.toLowerCase().includes(keyword))
-    );
-    renderTable(filtered);
-  }
+  // Inisialisasi Navigasi Sidebar
+  document.querySelectorAll("#sidebar-nav button").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      document.querySelectorAll("#sidebar-nav button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      
+      currentPage = btn.dataset.page;
+      document.getElementById("page-title").textContent = currentPage.toUpperCase() + " CONVERSION";
 
-  // Inisialisasi Tombol Sidebar (Today, Yesterday, Reports)
-  function initSidebarTabs() {
-    const buttons = document.querySelectorAll("aside .menu-list button");
-    buttons.forEach((btn, index) => {
-      btn.addEventListener("click", () => {
-        buttons.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-
-        if (index === 0) currentFilterMode = "today";
-        else if (index === 1) currentFilterMode = "yesterday";
-        else if (index === 2) currentFilterMode = "reports";
-
-        updateDashboardView();
-      });
+      // Jika pindah ke Reports, default tanggal bisa dilepas atau dibiarkan
+      applyFilters();
     });
-  }
+  });
 
   async function loadInitial() {
-    let query = supabaseClient
+    const { data, error } = await supabaseClient
       .from("conversions")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(500); // Ambil data lebih banyak untuk rentang yesterday/reports
+      .limit(1000);
 
-    const { data, error } = await query;
     if (error) { console.error(error); return; }
-
     allConversions = data || [];
-    updateDashboardView();
+    applyFilters();
   }
 
   function subscribeRealtime() {
@@ -356,18 +440,14 @@
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "conversions" },
         (payload) => {
-          const row = payload.new;
-          allConversions.unshift(row);
-          
-          updateDashboardView();
-          updateSidebarWidgets(row);
-          showToast(row);
+          allConversions.unshift(payload.new);
+          applyFilters();
+          showToast(payload.new);
         }
       )
       .subscribe();
   }
 
-  initSidebarTabs();
   loadInitial();
   subscribeRealtime();
 </script>
