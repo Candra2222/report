@@ -109,9 +109,6 @@
   tbody tr.new-row { animation: flash 1.2s ease; }
   @keyframes flash { from { background: rgba(45,212,167,.25); } to { background: transparent; } }
 
-  .badge-network { font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
-  .badge-trafee { background: #3730a3; color: #c7d2fe; }
-  .badge-imonetizeit { background: #7c2d12; color: #fed7aa; }
   .payout { color: var(--green); font-weight: 600; }
   
   .table-footer-total {
@@ -218,15 +215,31 @@
 
   function fmtMoney(n) { return "$" + Number(n).toFixed(2); }
 
-  // Fungsi untuk mengubah kode negara (misal: "ID", "US") menjadi emoji bendera
+  // Fungsi untuk mengubah kode negara menjadi bendera lingkaran
   function countryToFlag(countryCode) {
     if (!countryCode) return "🌐";
     const cleanCode = countryCode.trim().split(/\s+/)[0].toLowerCase();
     
     if (cleanCode.length !== 2) return countryCode;
 
-    // Menggunakan gambar bendera lingkaran dari FlagCDN
     return `<img src="https://flagcdn.com/w40/${cleanCode}.png" alt="${cleanCode}" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover; vertical-align: middle;" />`;
+  }
+
+  // Fungsi untuk mengubah teks network menjadi logo kustom
+  function networkToLogo(networkName) {
+    if (!networkName) return "-";
+    const net = networkName.trim().toLowerCase();
+
+    let logoUrl = "";
+    if (net === "trafee") {
+      logoUrl = "URL_LOGO_TRAFEE_KAMU_DISINI"; // Ganti dengan link/path logo Trafee kamu
+    } else if (net === "imonetizeit") {
+      logoUrl = "URL_LOGO_IMONETIZEIT_KAMU_DISINI"; // Ganti dengan link/path logo iMonetizeIt kamu
+    } else {
+      return networkName.toUpperCase();
+    }
+
+    return `<img src="${logoUrl}" alt="${net}" style="height: 20px; object-fit: contain; vertical-align: middle;" />`;
   }
   
   function renderView(data) {
@@ -239,9 +252,9 @@
       thead.innerHTML = `
         <tr>
           <th>#</th>
-          <th>Smartlink / Click ID</th>
+          <th>Click ID</th>
           <th>Network</th>
-          <th>Clicks / Conversions</th>
+          <th>Conversions</th>
           <th>Payouts</th>
         </tr>
       `;
@@ -267,7 +280,7 @@
         tr.innerHTML = `
           <td>${index + 1}</td>
           <td><b>${item.click_id}</b></td>
-          <td><span class="badge-network badge-${item.network}">${item.network.toUpperCase()}</span></td>
+          <td>${networkToLogo(item.network)}</td>
           <td>${item.count}</td>
           <td class="payout">${fmtMoney(item.payout)}</td>
         `;
@@ -290,7 +303,7 @@
       document.getElementById("total-payout").textContent = fmtMoney(totalSum);
 
     } else {
-      // TAMPILAN TODAY / YESTERDAY (Menggunakan Bendera Emoji untuk Country)
+      // TAMPILAN TODAY / YESTERDAY
       thead.innerHTML = `
         <tr>
           <th>#</th>
@@ -309,7 +322,7 @@
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${index + 1}</td>
-          <td><span class="badge-network badge-${row.network}">${row.network.toUpperCase()}</span></td>
+          <td>${networkToLogo(row.network)}</td>
           <td>${row.click_id ?? "-"}</td>
           <td>${countryToFlag(row.country)}</td>
           <td class="payout">${fmtMoney(row.payout)}</td>
