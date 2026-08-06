@@ -46,7 +46,6 @@
     z-index: 100;
   }
 
-  /* State Sidebar Tertutup di Desktop */
   aside.collapsed {
     width: 0;
     padding: 0;
@@ -101,6 +100,13 @@
   .total-badge b { color: var(--green); }
   .live-pill { background: var(--green-glow); color: var(--green); font-size: 9px; padding: 2px 6px; border-radius: 999px; font-weight: 600; letter-spacing: 0.5px; }
   
+  .sound-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--muted-light);
+    padding: 4px 8px; border-radius: 5px; font-size: 10px; cursor: pointer; font-weight: 500;
+    transition: all 0.2s; display: flex; align-items: center; gap: 4px;
+  }
+  .sound-btn:hover { border-color: var(--green); color: var(--green); }
+
   .logout-btn {
     background: transparent; border: 1px solid var(--border); color: var(--muted-light);
     padding: 4px 8px; border-radius: 5px; font-size: 10px; cursor: pointer; font-weight: 500;
@@ -215,6 +221,7 @@
         <div class="clock" id="clock">00:00:00</div>
         <div class="total-badge">Total: <b id="total-payout">$0.00</b></div>
         <div class="live-pill">LIVE</div>
+        <button class="sound-btn" id="sound-toggle-btn" onclick="toggleAudio()">🔔 Sound: ON</button>
         <button class="logout-btn" onclick="logout()">Logout</button>
       </div>
     </header>
@@ -253,10 +260,16 @@
 
   let allConversions = [];
   let currentPage = "today";
+  let soundEnabled = true;
 
   const todayIso = new Date().toISOString().split('T')[0];
   document.getElementById("date-start").value = todayIso;
   document.getElementById("date-end").value = todayIso;
+
+  // Minta izin Browser Notification saat pertama kali dibuka
+  if ("Notification" in window && Notification.permission !== "granted") {
+    Notification.requestPermission();
+  }
 
   setInterval(() => {
     document.getElementById("clock").textContent = new Date().toLocaleTimeString();
@@ -268,6 +281,50 @@
       sidebar.classList.toggle("open");
     } else {
       sidebar.classList.toggle("collapsed");
+    }
+  }
+
+  function toggleAudio() {
+    soundEnabled = !soundEnabled;
+    const btn = document.getElementById("sound-toggle-btn");
+    btn.textContent = soundEnabled ? "🔔 Sound: ON" : "🔕 Sound: OFF";
+    btn.style.borderColor = soundEnabled ? "var(--border)" : "#ef4444";
+  }
+
+  // Fungsi untuk memutar nada notifikasi menggunakan Web Audio API (tanpa file eksternal)
+  function playNotificationSound() {
+    if (!soundEnabled) return;
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // Nada D5
+      osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15); // Naik ke A5
+      
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.3);
+    } catch (e) {
+      console.error("Audio error:", e);
+    }
+  }
+
+  // Fungsi untuk memunculkan Push Notification browser
+  function triggerBrowserNotification(row) {
+    if ("Notification" in window && Notification.permission === "granted") {
+      const network = (row.network || "Conversion").toUpperCase();
+      const payout = fmtMoney(row.payout || 0);
+      new Notification(`💰 New Conversion! [${network}]`, {
+        body: `Payout: ${payout} | Click ID: ${row.click_id || "-"}`,
+        icon: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+      });
     }
   }
 
@@ -475,6 +532,8 @@
           allConversions.unshift(payload.new);
           applyFilters();
           showToast(payload.new);
+          playNotificationSound();
+          triggerBrowserNotification(payload.new);
         }
       )
       .subscribe();
