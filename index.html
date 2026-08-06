@@ -220,12 +220,18 @@
 
   // Fungsi untuk mengubah kode negara (misal: "ID", "US") menjadi emoji bendera
   function countryToFlag(countryCode) {
-    if (!countryCode || countryCode.length !== 2) return "🌐 " + (countryCode || "-");
-    const codePoints = countryCode
-      .toUpperCase()
+    if (!countryCode) return "🌐";
+    // Ambil 2 karakter kode negara yang bersih
+    const cleanCode = countryCode.trim().split(/\s+/)[0].toUpperCase();
+    
+    if (cleanCode.length !== 2) return "🌐";
+    
+    const codePoints = cleanCode
       .split('')
       .map(char => 127397 + char.charCodeAt(0));
-    return String.fromCodePoint(...codePoints) + " " + countryCode.toUpperCase();
+    
+    // Hanya mengembalikan emoji bendera tanpa menyertakan teks kodenya
+    return String.fromCodePoint(...codePoints);
   }
 
   function renderView(data) {
